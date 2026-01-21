@@ -108,44 +108,14 @@ function CotacaoForm({ operadoraParam }: { operadoraParam: string }) {
     setFormData({ ...formData, telefone: formatted })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validateForm()) return
 
-    const telefoneClean = formData.telefone.replace(/\D/g, "")
-    const ddd = telefoneClean.slice(0, 2)
-    const numero = telefoneClean.slice(2)
+    const tipoPlanoText = formData.tipoPlano === "empresarial" ? "Empresarial (MEI)" : "Individual/Familiar"
 
-    try {
-      const response = await fetch("/api/send-cotacao", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nome: formData.nomeCompleto,
-          email: formData.email,
-          ddd: ddd,
-          telefone: numero,
-          numeroPessoas: formData.idades,
-          tipoPlano: formData.tipoPlano === "empresarial" ? "empresarial" : "pessoa_fisica",
-          operadora: operadoraParam,
-          cidade: formData.cidade,
-          estado: formData.estado,
-          mensagem: formData.mensagem,
-          assunto: operadoraInfo.assunto,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Erro ao enviar cotação")
-      }
-
-      // Redirecionar para WhatsApp após envio bem-sucedido
-      const tipoPlanoText = formData.tipoPlano === "empresarial" ? "Empresarial (MEI)" : "Individual/Familiar"
-
-      const message = `*${operadoraInfo.assunto}*
+    const message = `*${operadoraInfo.assunto}*
 
 *Nome:* ${formData.nomeCompleto}
 *E-mail:* ${formData.email}
@@ -155,13 +125,10 @@ function CotacaoForm({ operadoraParam }: { operadoraParam: string }) {
 *Cidade:* ${formData.cidade} - ${formData.estado}
 ${formData.mensagem ? `*Obs:* ${formData.mensagem}` : ""}`
 
-      const encodedMessage = encodeURIComponent(message)
-      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`
+    const encodedMessage = encodeURIComponent(message)
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`
 
-      window.open(whatsappUrl, "_blank")
-    } catch (error) {
-      alert("Erro ao enviar cotação. Por favor, tente novamente.")
-    }
+    window.open(whatsappUrl, "_blank")
   }
 
   const inputClasses = (error?: string) =>
